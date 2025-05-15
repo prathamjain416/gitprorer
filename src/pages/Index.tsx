@@ -1,0 +1,94 @@
+
+import { useState } from "react";
+import Search from "../components/Search";
+import Profile from "../components/Profile";
+import Repositories from "../components/Repositories";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import EmptyState from "../components/EmptyState";
+import { GithubProfile, GithubRepository } from "../types/github";
+import Header from "../components/Header";
+
+const Index = () => {
+  const [username, setUsername] = useState<string>("");
+  const [searchInitiated, setSearchInitiated] = useState(false);
+
+  const fetchUser = async (username: string): Promise<GithubProfile> => {
+    const response = await fetch(`https://api.github.com/users/${username}`);
+    if (!response.ok) {
+      throw new Error("User not found");
+    }
+    return response.json();
+  };
+
+  const fetchRepositories = async (username: string): Promise<GithubRepository[]> => {
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=10`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch repositories");
+    }
+    return response.json();
+  };
+
+  const {
+    data: userData,
+    isLoading: isUserLoading,
+    error: userError,
+  } = useQuery({
+    queryKey: ["user", username],
+    queryFn: () => fetchUser(username),
+    enabled: !!username && searchInitiated,
+    retry: false,
+  });
+
+  const {
+    data: reposData,
+    isLoading: isReposLoading,
+    error: reposError,
+  } = useQuery({
+    queryKey: ["repos", username],
+    queryFn: () => fetchRepositories(username),
+    enabled: !!userData,
+    retry: false,
+  });
+
+  const handleSearch = (searchUsername: string) => {
+    if (!searchUsername.trim()) {
+      toast.error("Please enter a GitHub username");
+      return;
+    }
+
+    setUsername(searchUsername);
+    setSearchInitiated(true);
+  };
+
+  const isLoading = isUserLoading || isReposLoading;
+  const hasError = userError || reposError;
+
+  if (hasError && searchInitiated) {
+    toast.error(userError ? "User not found" : "Failed to fetch repositories");
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container py-6 px-4 md:px-6 space-y-8 max-w-5xl">
+        <Search onSearch={handleSearch} isLoading={isLoading} />
+        
+        {!searchInitiated && <EmptyState />}
+        
+        {searchInitiated && !isLoading && !hasError && userData && (
+          <>
+            <Profile user={userData} />
+            <Repositories 
+              repos={reposData || []} 
+              isLoading={isReposLoading} 
+              username={username} 
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Index;
