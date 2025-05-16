@@ -35,11 +35,19 @@ export interface GithubRepository {
   language: string | null;
   forks_count: number;
   topics: string[];
+  size: number;
+  default_branch: string;
+  open_issues_count: number;
+  is_template: boolean;
   license: {
     key: string;
     name: string;
     url: string;
   } | null;
+  visibility?: string;
+  has_issues?: boolean;
+  has_projects?: boolean;
+  has_wiki?: boolean;
 }
 
 export const languageColors: Record<string, string> = {

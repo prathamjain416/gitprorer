@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { GithubRepository } from "../types/github";
 import { languageColors } from "../types/github";
 import { formatDate } from "../utils/dateFormatter";
-import { Star, GitFork, AlertCircle } from "lucide-react";
+import { Star, GitFork, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
+import RepositoryInsights from "./RepositoryInsights";
 
 interface RepositoriesProps {
   repos: GithubRepository[];
@@ -14,6 +15,7 @@ interface RepositoriesProps {
 }
 
 const RepositoryCard: React.FC<{ repo: GithubRepository }> = ({ repo }) => {
+  const [expanded, setExpanded] = useState(false);
   const languageColor = repo.language && languageColors[repo.language] ? 
     languageColors[repo.language] : "#8b949e";
 
@@ -53,21 +55,49 @@ const RepositoryCard: React.FC<{ repo: GithubRepository }> = ({ repo }) => {
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-auto text-xs">
-          {repo.language && (
-            <div className="flex items-center">
-              <span 
-                className="repo-language-color" 
-                style={{ backgroundColor: languageColor }}
-              />
-              <span>{repo.language}</span>
+        <div className="flex flex-wrap items-center justify-between gap-y-2 mt-auto text-xs">
+          <div className="flex items-center gap-x-6">
+            {repo.language && (
+              <div className="flex items-center">
+                <span 
+                  className="repo-language-color" 
+                  style={{ 
+                    backgroundColor: languageColor,
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    display: 'inline-block',
+                    marginRight: '4px' 
+                  }}
+                />
+                <span>{repo.language}</span>
+              </div>
+            )}
+            
+            <div className="text-muted-foreground">
+              Updated {formatDate(repo.updated_at, true)}
             </div>
-          )}
-          
-          <div className="text-muted-foreground">
-            Updated {formatDate(repo.updated_at, true)}
           </div>
+          
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 text-primary text-xs hover:underline"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="h-3 w-3" />
+                Hide details
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3 w-3" />
+                View insights
+              </>
+            )}
+          </button>
         </div>
+        
+        {expanded && <RepositoryInsights repo={repo} />}
       </CardContent>
     </Card>
   );

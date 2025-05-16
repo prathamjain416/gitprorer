@@ -1,5 +1,5 @@
 
-import { Github } from "lucide-react";
+import { Github, FileCode } from "lucide-react";
 
 const Header = () => {
   return (
@@ -9,14 +9,16 @@ const Header = () => {
           <Github className="h-6 w-6" />
           <h1 className="text-lg font-semibold">GitHub Profile Explorer</h1>
         </div>
-        <a 
-          href="https://github.com" 
-          target="_blank"
-          rel="noopener noreferrer" 
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Visit GitHub
-        </a>
+        <div className="flex items-center gap-4">
+          <a 
+            href="https://github.com" 
+            target="_blank"
+            rel="noopener noreferrer" 
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Visit GitHub
+          </a>
+        </div>
       </div>
     </div>
   );

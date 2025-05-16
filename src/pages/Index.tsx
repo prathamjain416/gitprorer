@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import EmptyState from "../components/EmptyState";
 import { GithubProfile, GithubRepository } from "../types/github";
 import Header from "../components/Header";
+import ProfileStats from "../components/ProfileStats";
 
 const Index = () => {
   const [username, setUsername] = useState<string>("");
@@ -79,6 +80,14 @@ const Index = () => {
         {searchInitiated && !isLoading && !hasError && userData && (
           <>
             <Profile user={userData} />
+            
+            {/* New Stats Component */}
+            <ProfileStats 
+              user={userData} 
+              repos={reposData || []} 
+              isLoading={isReposLoading} 
+            />
+            
             <Repositories 
               repos={reposData || []} 
               isLoading={isReposLoading} 
