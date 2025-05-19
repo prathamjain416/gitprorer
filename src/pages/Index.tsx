@@ -9,6 +9,7 @@ import EmptyState from "../components/EmptyState";
 import { GithubProfile, GithubRepository } from "../types/github";
 import Header from "../components/Header";
 import ProfileStats from "../components/ProfileStats";
+import { BookmarkProvider } from "../contexts/BookmarkContext";
 
 const Index = () => {
   const [username, setUsername] = useState<string>("");
@@ -70,33 +71,34 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container py-6 px-4 md:px-6 space-y-8 max-w-5xl">
-        <Search onSearch={handleSearch} isLoading={isLoading} />
-        
-        {!searchInitiated && <EmptyState />}
-        
-        {searchInitiated && !isLoading && !hasError && userData && (
-          <>
-            <Profile user={userData} />
-            
-            {/* New Stats Component */}
-            <ProfileStats 
-              user={userData} 
-              repos={reposData || []} 
-              isLoading={isReposLoading} 
-            />
-            
-            <Repositories 
-              repos={reposData || []} 
-              isLoading={isReposLoading} 
-              username={username} 
-            />
-          </>
-        )}
+    <BookmarkProvider onSearch={handleSearch}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-6 px-4 md:px-6 space-y-8 max-w-5xl">
+          <Search onSearch={handleSearch} isLoading={isLoading} />
+          
+          {!searchInitiated && <EmptyState />}
+          
+          {searchInitiated && !isLoading && !hasError && userData && (
+            <>
+              <Profile user={userData} />
+              
+              <ProfileStats 
+                user={userData} 
+                repos={reposData || []} 
+                isLoading={isReposLoading} 
+              />
+              
+              <Repositories 
+                repos={reposData || []} 
+                isLoading={isReposLoading} 
+                username={username} 
+              />
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </BookmarkProvider>
   );
 };
 

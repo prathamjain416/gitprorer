@@ -1,7 +1,12 @@
 
 import { Github, FileCode } from "lucide-react";
+import BookmarksDrawer from "./BookmarksDrawer";
+import { useContext } from "react";
+import { BookmarkContext } from "../contexts/BookmarkContext";
 
 const Header = () => {
+  const { bookmarks, removeBookmark, handleSearch } = useContext(BookmarkContext);
+  
   return (
     <div className="border-b">
       <div className="container py-4 px-4 md:px-6 flex items-center justify-between max-w-5xl">
@@ -10,6 +15,15 @@ const Header = () => {
           <h1 className="text-lg font-semibold">GitHub Profile Explorer</h1>
         </div>
         <div className="flex items-center gap-4">
+          {/* <div className="hidden md:flex items-center gap-1 text-sm text-primary">
+            <FileCode className="h-4 w-4" />
+            <span>Repository Insights</span>
+          </div> */}
+          <BookmarksDrawer 
+            bookmarks={bookmarks} 
+            onSelect={handleSearch}
+            onRemove={removeBookmark}
+          />
           <a 
             href="https://github.com" 
             target="_blank"

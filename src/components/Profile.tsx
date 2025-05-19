@@ -1,16 +1,21 @@
 
-import React from "react";
+import React, { useContext } from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { GithubProfile } from "../types/github";
 import { MapPin, Link, Building, Calendar, Users, GitFork } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { formatDate } from "../utils/dateFormatter";
+import BookmarkButton from "./BookmarkButton";
+import { BookmarkContext } from "../contexts/BookmarkContext";
 
 interface ProfileProps {
   user: GithubProfile;
 }
 
 const Profile: React.FC<ProfileProps> = ({ user }) => {
+  const { isBookmarked, toggleBookmark } = useContext(BookmarkContext);
+  const bookmarked = isBookmarked(user.id);
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -23,7 +28,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </div>
           <div className="flex-1 space-y-4">
-            <div>
+            <div className="flex justify-between items-start">
               <h2 className="text-2xl font-bold">
                 {user.name || user.login}
                 {user.name && (
@@ -32,8 +37,13 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
                   </span>
                 )}
               </h2>
-              {user.bio && <p className="text-muted-foreground mt-2">{user.bio}</p>}
+              <BookmarkButton 
+                isBookmarked={bookmarked}
+                onClick={() => toggleBookmark(user)}
+                tooltipText={bookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
+              />
             </div>
+            {user.bio && <p className="text-muted-foreground mt-2">{user.bio}</p>}
 
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-1.5">
