@@ -1,5 +1,5 @@
 
-import { Github, FileCode } from "lucide-react";
+import { Github } from "lucide-react";
 import BookmarksDrawer from "./BookmarksDrawer";
 import { useContext } from "react";
 import { BookmarkContext } from "../contexts/BookmarkContext";
@@ -15,10 +15,6 @@ const Header = () => {
           <h1 className="text-lg font-semibold">GitHub Profile Explorer</h1>
         </div>
         <div className="flex items-center gap-4">
-          {/* <div className="hidden md:flex items-center gap-1 text-sm text-primary">
-            <FileCode className="h-4 w-4" />
-            <span>Repository Insights</span>
-          </div> */}
           <BookmarksDrawer 
             bookmarks={bookmarks}
             repositories={bookmarkedRepos}

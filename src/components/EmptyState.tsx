@@ -14,15 +14,6 @@ const EmptyState = () => {
         </p>
       </div>
       
-{/*       <div className="bg-muted/30 rounded-lg p-4 max-w-md">
-        <h3 className="font-medium text-base mb-2">Search Tips:</h3>
-        <ul className="text-sm text-muted-foreground text-left space-y-2">
-          <li><span className="font-medium">Profile search:</span> Enter a username (e.g., <code className="bg-muted px-1 rounded">octocat</code>)</li>
-          <li><span className="font-medium">Repository search:</span> Enter username/repository (e.g., <code className="bg-muted px-1 rounded">facebook/react</code>)</li>
-          <li><span className="font-medium">Keyboard shortcuts:</span> Press Enter to search or Escape to clear</li>
-        </ul>
-      </div> */}
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
         <div className="border border-dashed border-muted-foreground/30 rounded-lg p-6">
           <div className="flex items-center justify-center mb-4">
