@@ -9,13 +9,15 @@ interface BookmarkButtonProps {
   onClick: () => void;
   tooltipText?: string;
   size?: "sm" | "default";
+  className?: string;
 }
 
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({ 
   isBookmarked, 
   onClick, 
   tooltipText,
-  size = "default"
+  size = "default",
+  className = "",
 }) => {
   const sizeClasses = size === "sm" ? "h-8 w-8" : "h-10 w-10";
   
@@ -25,7 +27,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className={sizeClasses}
+          className={`${sizeClasses} ${className}`}
           onClick={onClick}
           aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
         >

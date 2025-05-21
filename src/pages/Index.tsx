@@ -10,9 +10,11 @@ import { GithubProfile, GithubRepository } from "../types/github";
 import Header from "../components/Header";
 import ProfileStats from "../components/ProfileStats";
 import { BookmarkProvider } from "../contexts/BookmarkContext";
+import SingleRepository from "../components/SingleRepository";
 
 const Index = () => {
   const [username, setUsername] = useState<string>("");
+  const [repoName, setRepoName] = useState<string>("");
   const [searchInitiated, setSearchInitiated] = useState(false);
 
   const fetchUser = async (username: string): Promise<GithubProfile> => {
@@ -31,6 +33,14 @@ const Index = () => {
     return response.json();
   };
 
+  const fetchSingleRepository = async (username: string, repoName: string): Promise<GithubRepository> => {
+    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    if (!response.ok) {
+      throw new Error("Repository not found");
+    }
+    return response.json();
+  };
+
   const {
     data: userData,
     isLoading: isUserLoading,
@@ -38,7 +48,7 @@ const Index = () => {
   } = useQuery({
     queryKey: ["user", username],
     queryFn: () => fetchUser(username),
-    enabled: !!username && searchInitiated,
+    enabled: !!username && searchInitiated && !repoName,
     retry: false,
   });
 
@@ -49,25 +59,44 @@ const Index = () => {
   } = useQuery({
     queryKey: ["repos", username],
     queryFn: () => fetchRepositories(username),
-    enabled: !!userData,
+    enabled: !!userData && !repoName,
     retry: false,
   });
 
-  const handleSearch = (searchUsername: string) => {
+  const {
+    data: singleRepoData,
+    isLoading: isSingleRepoLoading,
+    error: singleRepoError,
+  } = useQuery({
+    queryKey: ["repo", username, repoName],
+    queryFn: () => fetchSingleRepository(username, repoName),
+    enabled: !!username && !!repoName && searchInitiated,
+    retry: false,
+  });
+
+  const handleSearch = (searchUsername: string, searchRepoName?: string) => {
     if (!searchUsername.trim()) {
       toast.error("Please enter a GitHub username");
       return;
     }
 
     setUsername(searchUsername);
+    setRepoName(searchRepoName || "");
     setSearchInitiated(true);
   };
 
-  const isLoading = isUserLoading || isReposLoading;
-  const hasError = userError || reposError;
+  const handleBackToProfile = () => {
+    setRepoName("");
+  };
+
+  const isLoading = isUserLoading || isReposLoading || isSingleRepoLoading;
+  const hasError = userError || reposError || singleRepoError;
 
   if (hasError && searchInitiated) {
-    toast.error(userError ? "User not found" : "Failed to fetch repositories");
+    const errorMessage = singleRepoError 
+      ? "Repository not found" 
+      : (userError ? "User not found" : "Failed to fetch repositories");
+    toast.error(errorMessage);
   }
 
   return (
@@ -79,21 +108,34 @@ const Index = () => {
           
           {!searchInitiated && <EmptyState />}
           
-          {searchInitiated && !isLoading && !hasError && userData && (
+          {searchInitiated && !isLoading && !hasError && (
             <>
-              <Profile user={userData} />
-              
-              <ProfileStats 
-                user={userData} 
-                repos={reposData || []} 
-                isLoading={isReposLoading} 
-              />
-              
-              <Repositories 
-                repos={reposData || []} 
-                isLoading={isReposLoading} 
-                username={username} 
-              />
+              {repoName && singleRepoData ? (
+                <SingleRepository 
+                  repo={singleRepoData} 
+                  isLoading={isSingleRepoLoading}
+                  onBackToProfile={handleBackToProfile}
+                  username={username}
+                />
+              ) : (
+                userData && (
+                  <>
+                    <Profile user={userData} />
+                    
+                    <ProfileStats 
+                      user={userData} 
+                      repos={reposData || []} 
+                      isLoading={isReposLoading} 
+                    />
+                    
+                    <Repositories 
+                      repos={reposData || []} 
+                      isLoading={isReposLoading} 
+                      username={username} 
+                    />
+                  </>
+                )
+              )}
             </>
           )}
         </div>

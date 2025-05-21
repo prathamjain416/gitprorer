@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { GithubRepository } from "../types/github";
 import { languageColors } from "../types/github";
@@ -7,6 +7,8 @@ import { formatDate } from "../utils/dateFormatter";
 import { Star, GitFork, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
 import RepositoryInsights from "./RepositoryInsights";
+import BookmarkButton from "./BookmarkButton";
+import { BookmarkContext } from "../contexts/BookmarkContext";
 
 interface RepositoriesProps {
   repos: GithubRepository[];
@@ -16,6 +18,7 @@ interface RepositoriesProps {
 
 const RepositoryCard: React.FC<{ repo: GithubRepository }> = ({ repo }) => {
   const [expanded, setExpanded] = useState(false);
+  const { isRepoBookmarked, toggleRepoBookmark } = useContext(BookmarkContext);
   const languageColor = repo.language && languageColors[repo.language] ? 
     languageColors[repo.language] : "#8b949e";
 
@@ -32,20 +35,30 @@ const RepositoryCard: React.FC<{ repo: GithubRepository }> = ({ repo }) => {
             {repo.name}
           </a>
           
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {repo.stargazers_count}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {repo.stargazers_count}
+                </span>
+              </div>
 
-            <div className="flex items-center gap-1">
-              <GitFork className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {repo.forks_count}
-              </span>
+              <div className="flex items-center gap-1">
+                <GitFork className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {repo.forks_count}
+                </span>
+              </div>
             </div>
+            
+            <BookmarkButton 
+              isBookmarked={isRepoBookmarked(repo.id)}
+              onClick={() => toggleRepoBookmark(repo)}
+              tooltipText={isRepoBookmarked(repo.id) ? "Remove from bookmarks" : "Save repository"}
+              size="sm"
+              className="mr-[-8px]"
+            />
           </div>
         </div>
 

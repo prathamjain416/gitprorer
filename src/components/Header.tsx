@@ -5,7 +5,7 @@ import { useContext } from "react";
 import { BookmarkContext } from "../contexts/BookmarkContext";
 
 const Header = () => {
-  const { bookmarks, removeBookmark, handleSearch } = useContext(BookmarkContext);
+  const { bookmarks, bookmarkedRepos, removeBookmark, removeRepoBookmark, handleSearch } = useContext(BookmarkContext);
   
   return (
     <div className="border-b">
@@ -20,9 +20,11 @@ const Header = () => {
             <span>Repository Insights</span>
           </div> */}
           <BookmarksDrawer 
-            bookmarks={bookmarks} 
-            onSelect={handleSearch}
-            onRemove={removeBookmark}
+            bookmarks={bookmarks}
+            repositories={bookmarkedRepos}
+            onSelectProfile={handleSearch}
+            onRemoveProfile={removeBookmark}
+            onRemoveRepo={removeRepoBookmark}
           />
           <a 
             href="https://github.com" 
