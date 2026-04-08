@@ -11,23 +11,32 @@
     <meta property="og:type" content="website" />
 
     <link rel="icon" type="image/svg+xml" href="/github-icon.svg" />
-    <!-- TraceFlow Analytics -->
+    <!-- TraceFlow Analytics Script -->
 <script>
 (function(){
-  var TF_PROJECT="e88b1c3ff3c5a230e0a23d9e";
-  var TF_KEY="ec119de145f28c1394f9bccf6afb3e23";
-  var TF_ENDPOINT="http://localhost:8000/api/track";
+  var TF_PID="ab745e341a9e510aa1527032";
+  var TF_EP="https://attribution-hub-7.preview.emergentagent.com/api/track";
+  var TF_CE="https://attribution-hub-7.preview.emergentagent.com/api/conversion";
+
+  // Session management (30-min inactivity timeout)
   var sid=localStorage.getItem("tf_sid");
-  var aid=localStorage.getItem("tf_aid");
-  if(!sid||Date.now()-parseInt(localStorage.getItem("tf_ts")||"0")>1800000){
+  var lastTs=parseInt(localStorage.getItem("tf_ts")||"0",10);
+  if(!sid||Date.now()-lastTs>1800000){
     sid=Math.random().toString(36).substr(2,12)+Date.now().toString(36);
     localStorage.setItem("tf_sid",sid);
   }
   localStorage.setItem("tf_ts",Date.now().toString());
+
+  // Persistent anonymous visitor ID
+  var aid=localStorage.getItem("tf_aid");
   if(!aid){aid=Math.random().toString(36).substr(2,16);localStorage.setItem("tf_aid",aid);}
+
+  // Collect UTM parameters
   var u=new URLSearchParams(window.location.search);
-  var d={
-    project_id:TF_PROJECT,
+
+  // Build event payload
+  var payload={
+    project_id:TF_PID,
     page_url:window.location.href,
     referrer:document.referrer||"",
     utm_source:u.get("utm_source")||"",
@@ -43,25 +52,42 @@
     screen_width:screen.width,
     screen_height:screen.height
   };
-  function send(data,retries){
-    retries=retries||0;
-    fetch(TF_ENDPOINT,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(data),
-      keepalive:true
-    }).catch(function(){
-      if(retries<3)setTimeout(function(){send(data,retries+1);},1000*(retries+1));
-    });
+
+  // Send with retry logic
+  function send(data,r){
+    r=r||0;
+    fetch(TF_EP,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data),keepalive:true})
+    .catch(function(){if(r<3)setTimeout(function(){send(data,r+1);},1000*(r+1));});
   }
-  send(d);
-  window.tfTrack=function(type,val,meta){
-    fetch("http://localhost:8000/api/conversion",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({project_id:TF_PROJECT,session_id:sid,event_type:type||"purchase",value:val||0,metadata:meta||{}})
+  send(payload);
+
+  // Expose conversion tracker globally
+  window.tfConvert=function(type,val,meta){
+    fetch(TF_CE,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({project_id:TF_PID,session_id:sid,event_type:type||"purchase",value:val||0,metadata:meta||{}})
     });
   };
+
+  // Track SPA navigation (history pushState)
+  var origPush=history.pushState;
+  history.pushState=function(){
+    origPush.apply(this,arguments);
+    setTimeout(function(){
+      payload.page_url=window.location.href;
+      payload.timestamp=new Date().toISOString();
+      payload.referrer="";
+      var nu=new URLSearchParams(window.location.search);
+      payload.utm_source=nu.get("utm_source")||payload.utm_source;
+      payload.utm_medium=nu.get("utm_medium")||payload.utm_medium;
+      payload.utm_campaign=nu.get("utm_campaign")||payload.utm_campaign;
+      send(payload);
+    },100);
+  };
+  window.addEventListener("popstate",function(){
+    payload.page_url=window.location.href;
+    payload.timestamp=new Date().toISOString();
+    send(payload);
+  });
 })();
 </script>
   </head>
