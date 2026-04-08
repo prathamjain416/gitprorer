@@ -11,6 +11,59 @@
     <meta property="og:type" content="website" />
 
     <link rel="icon" type="image/svg+xml" href="/github-icon.svg" />
+    <!-- TraceFlow Analytics -->
+<script>
+(function(){
+  var TF_PROJECT="e88b1c3ff3c5a230e0a23d9e";
+  var TF_KEY="ec119de145f28c1394f9bccf6afb3e23";
+  var TF_ENDPOINT="http://localhost:8000/api/track";
+  var sid=localStorage.getItem("tf_sid");
+  var aid=localStorage.getItem("tf_aid");
+  if(!sid||Date.now()-parseInt(localStorage.getItem("tf_ts")||"0")>1800000){
+    sid=Math.random().toString(36).substr(2,12)+Date.now().toString(36);
+    localStorage.setItem("tf_sid",sid);
+  }
+  localStorage.setItem("tf_ts",Date.now().toString());
+  if(!aid){aid=Math.random().toString(36).substr(2,16);localStorage.setItem("tf_aid",aid);}
+  var u=new URLSearchParams(window.location.search);
+  var d={
+    project_id:TF_PROJECT,
+    page_url:window.location.href,
+    referrer:document.referrer||"",
+    utm_source:u.get("utm_source")||"",
+    utm_medium:u.get("utm_medium")||"",
+    utm_campaign:u.get("utm_campaign")||"",
+    utm_content:u.get("utm_content")||"",
+    utm_term:u.get("utm_term")||"",
+    user_agent:navigator.userAgent,
+    device_type:window.innerWidth<768?"mobile":window.innerWidth<1024?"tablet":"desktop",
+    session_id:sid,
+    anonymous_id:aid,
+    timestamp:new Date().toISOString(),
+    screen_width:screen.width,
+    screen_height:screen.height
+  };
+  function send(data,retries){
+    retries=retries||0;
+    fetch(TF_ENDPOINT,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data),
+      keepalive:true
+    }).catch(function(){
+      if(retries<3)setTimeout(function(){send(data,retries+1);},1000*(retries+1));
+    });
+  }
+  send(d);
+  window.tfTrack=function(type,val,meta){
+    fetch("http://localhost:8000/api/conversion",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({project_id:TF_PROJECT,session_id:sid,event_type:type||"purchase",value:val||0,metadata:meta||{}})
+    });
+  };
+})();
+</script>
   </head>
 
   <body>
